@@ -20,8 +20,7 @@ ADMIN_USER=teacher ADMIN_PASS=your-strong-password node server.js
 
 ## Features
 
-- **Voter codes**: generate one-time codes, print slips, hand one to each student. Only real codes work, each works once.
-- Or let voters type their own ID (roll number), optionally restricted to an allowed list.
+- Voters enter their ID card number; each ID can vote once (enforced internally with a hashed key). Optionally restrict to an allowed list.
 - Optional name, optional anonymous voting (admin sees "Anonymous"; the ID is stored only as a one-way hash).
 - Live results, "who voted for whom" table, CSV export.
 - Settings page: title, candidates, open/close voting, rules.

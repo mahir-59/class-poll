@@ -4,157 +4,277 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Class Poll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f5f7; --card: #ffffff; --text: #1d2330; --muted: #6b7280;
-    --line: #e3e5ea; --brand: #2f5bea; --brand-soft: #e8eeff; --ok: #157f3b;
-    --ok-soft: #e4f6ea; --err: #b42318; --err-soft: #fdecea;
+    --bg: #f5f6fa; --surface: #ffffff; --surface-2: #f8f9fc; --text: #161a23; --muted: #646b7a;
+    --line: #e6e8ee; --brand: #4f46e5; --brand-2: #7c3aed; --brand-soft: #eef0ff; --brand-ring: rgba(79,70,229,.18);
+    --ok: #12805c; --ok-soft: #e3f6ee; --err: #c0362c; --err-soft: #fdeceb;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 4px 16px rgba(16,24,40,.06);
+    --radius: 16px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #12141a; --card: #1b1e26; --text: #e8eaf0; --muted: #9aa1ae;
-      --line: #2c303b; --brand: #6d8dff; --brand-soft: #232b45; --ok: #4cc37a;
-      --ok-soft: #173223; --err: #ff7b6e; --err-soft: #3a1c1a;
+      --bg: #0e1015; --surface: #171a21; --surface-2: #1d2029; --text: #eceef3; --muted: #9aa1b0;
+      --line: #2a2e39; --brand: #8b85ff; --brand-2: #b18cff; --brand-soft: #23233d; --brand-ring: rgba(139,133,255,.25);
+      --ok: #45c48f; --ok-soft: #15291f; --err: #ff8378; --err-soft: #35191a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
     }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .wrap { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; }
-  .wrap.wide { max-width: 960px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
-  h1 { font-size: 1.6rem; margin: 0 0 4px; }
-  h2 { font-size: 1.15rem; margin: 0 0 12px; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh;
+    font: 15px/1.55 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  .hidden { display: none !important; }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 32px 16px 56px; }
+  .wrap.wide { max-width: 1000px; }
+  h1, h2, h3 { margin: 0; letter-spacing: -.015em; }
+  h1 { font-size: 1.65rem; font-weight: 700; line-height: 1.25; }
+  h2 { font-size: 1.05rem; font-weight: 600; }
   .muted { color: var(--muted); }
-  .small { font-size: .875rem; }
-  label { display: block; font-weight: 600; margin: 14px 0 6px; }
+  .small { font-size: .85rem; }
+  a { color: var(--brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 16px; }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .step { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none;
+    background: var(--brand-soft); color: var(--brand); font-weight: 700; font-size: .8rem; }
+
+  /* Hero */
+  .hero { text-align: center; margin-bottom: 24px; }
+  .hero-icon { width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 16px; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2)); box-shadow: 0 8px 24px var(--brand-ring); }
+  .hero p { margin: 6px 0 0; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 600; padding: 4px 10px; border-radius: 99px;
+    background: var(--ok-soft); color: var(--ok); }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.off { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+  .hero .pill { margin-top: 14px; }
+
+  /* Forms */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  label.lbl { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+  .opt { font-weight: 400; color: var(--muted); }
+  .hint { font-size: .8rem; color: var(--muted); margin-top: 6px; }
   input[type=text], input[type=password], textarea {
-    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
-    background: var(--bg); color: var(--text); font: inherit; }
-  input:focus, textarea:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+    width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface-2); color: var(--text); font: inherit; transition: border-color .15s, box-shadow .15s; }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: .7; }
+  input:focus, textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-ring); background: var(--surface); }
   textarea { min-height: 110px; resize: vertical; }
-  .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin: 10px 0; cursor: pointer; }
-  .check input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--brand); }
-  .options { display: grid; gap: 10px; margin-top: 8px; }
-  .option { display: flex; gap: 12px; align-items: center; border: 1.5px solid var(--line); border-radius: 12px;
-    padding: 14px; cursor: pointer; margin: 0; font-weight: 500; }
-  .option:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
-  .option input { width: 20px; height: 20px; accent-color: var(--brand); flex: none; }
-  .option .note { display: block; font-weight: 400; font-size: .875rem; color: var(--muted); }
-  button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 11px 18px; cursor: pointer;
-    background: var(--brand); color: #fff; }
-  button.secondary { background: transparent; color: var(--text); border: 1px solid var(--line); }
-  button.danger { background: transparent; color: var(--err); border: 1px solid var(--err); }
-  button.link { background: none; color: var(--brand); padding: 4px 6px; font-weight: 500; }
-  button:disabled { opacity: .6; cursor: default; }
-  .block { width: 100%; margin-top: 18px; padding: 13px; }
-  .msg { padding: 11px 14px; border-radius: 10px; margin-top: 14px; }
+  #voterId { font-weight: 600; letter-spacing: .03em; }
+
+  /* Toggle switch */
+  .toggle { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 0; cursor: pointer; }
+  .toggle + .toggle { border-top: 1px solid var(--line); }
+  .toggle .t-title { font-weight: 500; }
+  .toggle .t-desc { display: block; font-size: .82rem; color: var(--muted); margin-top: 2px; }
+  .switch { appearance: none; -webkit-appearance: none; flex: none; width: 42px; height: 24px; border-radius: 99px; margin: 2px 0 0;
+    background: var(--line); position: relative; cursor: pointer; transition: background .2s; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+  .switch:checked { background: var(--brand); }
+  .switch:checked::after { transform: translateX(18px); }
+  .switch:focus-visible { outline: 3px solid var(--brand-ring); outline-offset: 2px; }
+  .inline-toggle { border-top: 1px solid var(--line); margin-top: 16px; padding-bottom: 0; }
+
+  /* Candidates */
+  .cands { display: grid; gap: 10px; }
+  @media (min-width: 560px) { .cands.two { grid-template-columns: 1fr 1fr; } }
+  .cand { position: relative; display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; cursor: pointer;
+    border: 1.5px solid var(--line); background: var(--surface); transition: border-color .15s, background .15s, transform .1s; }
+  .cand:hover { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); }
+  .cand:active { transform: scale(.99); }
+  .cand input { position: absolute; opacity: 0; pointer-events: none; }
+  .cand:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 3px var(--brand-ring); }
+  .cand:has(input:focus-visible) { box-shadow: 0 0 0 3px var(--brand-ring); }
+  .avatar { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; flex: none; font-weight: 700; font-size: .95rem;
+    background: hsl(var(--h) 70% 55% / .15); color: hsl(var(--h) 55% 45%); }
+  @media (prefers-color-scheme: dark) { .avatar { color: hsl(var(--h) 75% 72%); } }
+  .cand-text { flex: 1; min-width: 0; }
+  .cand-name { font-weight: 600; display: block; }
+  .cand-note { display: block; font-size: .82rem; color: var(--muted); }
+  .radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-items: center; transition: all .15s; }
+  .cand:has(input:checked) .radio { border-color: var(--brand); background: var(--brand); }
+  .cand:has(input:checked) .radio::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+
+  /* Buttons */
+  button { font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 11px 18px; cursor: pointer; transition: filter .15s, background .15s, transform .1s; }
+  button:active { transform: scale(.98); }
+  .btn { background: var(--brand); color: #fff; }
+  .btn:hover { filter: brightness(1.08); }
+  .btn-lg { width: 100%; padding: 15px; font-size: 1rem; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 6px 18px var(--brand-ring); }
+  .btn-ghost { background: var(--surface); color: var(--text); border: 1px solid var(--line); }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .btn-danger { background: transparent; color: var(--err); border: 1px solid color-mix(in srgb, var(--err) 50%, transparent); }
+  .btn-danger:hover { background: var(--err-soft); }
+  .btn-icon { background: none; color: var(--muted); padding: 8px; border-radius: 10px; line-height: 0; }
+  .btn-icon:hover { background: var(--err-soft); color: var(--err); }
+  button:disabled { opacity: .55; cursor: default; transform: none; }
+
+  .msg { display: flex; gap: 8px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; margin-top: 14px; font-size: .9rem; font-weight: 500; }
   .msg.err { background: var(--err-soft); color: var(--err); }
   .msg.ok { background: var(--ok-soft); color: var(--ok); }
-  .hidden { display: none !important; }
+
+  /* Success */
+  .done { text-align: center; padding: 16px 8px 8px; }
+  .done-icon { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 18px; display: grid; place-items: center;
+    background: var(--ok-soft); color: var(--ok); animation: pop .4s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .done p { margin: 8px 0 22px; }
+
+  /* Results bars */
+  .bar-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .bar-row + .bar-row { border-top: 1px solid var(--line); }
+  .bar-main { flex: 1; min-width: 0; }
+  .bar-top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
+  .bar-top b { font-weight: 600; }
+  .bar { height: 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: 99px; background: var(--brand); transition: width .5s ease; }
+  .bar-row.lead .bar span { background: linear-gradient(90deg, var(--brand), var(--brand-2)); }
+  .tag { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 99px;
+    background: var(--brand-soft); color: var(--brand); margin-left: 6px; vertical-align: 1px; }
+
+  /* Admin */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand .hero-icon { width: 42px; height: 42px; border-radius: 12px; margin: 0; flex: none; }
+  .brand h1 { font-size: 1.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+  .tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 20px; max-width: 100%; overflow-x: auto; }
+  .tabs button { background: none; color: var(--muted); padding: 8px 16px; border-radius: 9px; font-weight: 500; white-space: nowrap; }
+  .tabs button.active { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat .k { font-size: .8rem; color: var(--muted); font-weight: 500; }
+  .stat .v { display: block; font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .spread { justify-content: space-between; }
-  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
-  .tabs button { background: none; color: var(--muted); border-radius: 0; padding: 10px 14px; border-bottom: 2px solid transparent; }
-  .tabs button.active { color: var(--brand); border-bottom-color: var(--brand); }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
-  .stat b { display: block; font-size: 1.5rem; }
-  .bar-row { margin: 14px 0; }
-  .bar-row .row { justify-content: space-between; margin-bottom: 4px; }
-  .bar { height: 12px; border-radius: 6px; background: var(--brand-soft); overflow: hidden; }
-  .bar span { display: block; height: 100%; background: var(--brand); border-radius: 6px; transition: width .4s; }
-  .leader .bar span { background: var(--ok); }
-  .badge { font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--ok-soft); color: var(--ok); }
-  .badge.gray { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: .925rem; }
-  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
-  .cand-edit { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 8px; }
-  @media (max-width: 560px) { .cand-edit { grid-template-columns: 1fr auto; } .cand-edit .note-in { grid-column: 1; } }
-  .done { text-align: center; padding: 28px 8px; }
-  .done .tick { font-size: 3rem; line-height: 1; color: var(--ok); }
-  footer { text-align: center; margin-top: 20px; }
-  .seg { display: grid; gap: 8px; margin: 4px 0 8px; }
-  .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; letter-spacing: .04em; }
-  #codeTable td { padding: 6px 8px; }
-  #codeTable input { padding: 7px 10px; min-width: 160px; }
-  #voterId.code-in { text-transform: uppercase; letter-spacing: .08em; font-family: ui-monospace, Menlo, monospace; }
+  .search { position: relative; }
+  .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .search input { padding-left: 36px; width: 240px; max-width: 100%; }
+  .table-wrap { overflow-x: auto; margin: 0 -24px -24px; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: 12px 24px; border-top: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--surface-2); }
+  tbody tr:hover { background: var(--surface-2); }
+  .badge { font-size: .75rem; font-weight: 600; padding: 3px 9px; border-radius: 99px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+  .empty { text-align: center; padding: 36px 8px 12px; color: var(--muted); }
+  .cand-edit { display: grid; grid-template-columns: 42px 1fr 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px; }
+  @media (max-width: 600px) { .cand-edit { grid-template-columns: 42px 1fr auto; } .cand-edit .note-in { grid-column: 2; grid-row: 2; } }
+  .savebar { position: sticky; bottom: 16px; display: flex; align-items: center; gap: 12px; justify-content: flex-end;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .center-screen { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+  .login { width: 100%; max-width: 380px; }
 </style>
 </head>
 <body>
 
 <!-- ============ VOTER PAGE ============ -->
 <div id="voteView" class="wrap hidden">
-  <div class="card">
+  <header class="hero">
+    <div class="hero-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z"/><path d="M22 19H2"/></svg>
+    </div>
     <h1 id="pTitle">Loading…</h1>
-    <p id="pSub" class="muted" style="margin:0"></p>
-  </div>
+    <p id="pSub" class="muted"></p>
+    <span id="pStatus" class="pill hidden">Voting open</span>
+  </header>
 
   <div id="closedCard" class="card hidden">
-    <h2>Voting is closed</h2>
-    <p class="muted" style="margin:0">Please check with your coordinator.</p>
+    <div class="done">
+      <div class="done-icon" style="background:var(--surface-2);color:var(--muted)">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
+      <h2>Voting is closed</h2>
+      <p class="muted">Please check with your coordinator.</p>
+    </div>
   </div>
 
-  <form id="voteForm" class="card hidden" autocomplete="off">
-    <label for="voterId"><span id="idLabel">Roll Number</span> <span id="idHint" class="muted small">(required, one vote per ID)</span></label>
-    <input id="voterId" type="text" required>
+  <form id="voteForm" class="hidden" autocomplete="off" novalidate>
+    <section class="card">
+      <div class="card-head"><span class="step">1</span><h2>Your details</h2></div>
+      <div class="field">
+        <label class="lbl" for="voterId" id="idLabel">ID Card Number</label>
+        <input id="voterId" type="text" autocapitalize="characters" spellcheck="false" placeholder="Enter your ID card number">
+        <div class="hint">Used only to make sure everyone votes once.</div>
+      </div>
+      <div class="field" id="nameBox">
+        <label class="lbl" for="voterName">Your name <span id="nameHint" class="opt">(optional)</span></label>
+        <input id="voterName" type="text" maxlength="60" placeholder="e.g. Priya Sharma">
+      </div>
+      <label id="anonBox" class="toggle inline-toggle hidden">
+        <span><span class="t-title">Vote anonymously</span>
+          <span class="t-desc">Your name and ID won't be shown next to your vote.</span></span>
+        <input id="anon" type="checkbox" class="switch">
+      </label>
+    </section>
 
-    <div id="nameBox">
-      <label for="voterName">Your name <span id="nameHint" class="muted small">(optional)</span></label>
-      <input id="voterName" type="text" maxlength="60">
-    </div>
+    <section class="card">
+      <div class="card-head"><span class="step">2</span><h2>Choose your candidate</h2></div>
+      <div id="candList" class="cands"></div>
+    </section>
 
-    <label id="anonBox" class="check hidden">
-      <input id="anon" type="checkbox">
-      <span>Vote anonymously<br><span class="muted small">The admin will not see your name or ID next to your vote.</span></span>
-    </label>
-
-    <label>Choose a candidate</label>
-    <div id="candList" class="options"></div>
-
-    <button class="block" type="submit" id="voteBtn">Submit vote</button>
+    <button class="btn-lg" type="submit" id="voteBtn">Submit vote</button>
     <div id="voteMsg"></div>
   </form>
 
   <div id="doneCard" class="card hidden">
     <div class="done">
-      <div class="tick">✓</div>
-      <h2>Thank you, your vote is recorded</h2>
-      <p class="muted">You can close this page now.</p>
-      <button class="secondary" id="nextVoter" type="button">Next voter on this device</button>
+      <div class="done-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h2>Your vote has been recorded</h2>
+      <p class="muted">Thank you for voting. You can close this page now.</p>
+      <button class="btn-ghost" id="nextVoter" type="button">Next voter on this device</button>
     </div>
   </div>
 
   <div id="publicResults" class="card hidden"></div>
-
 </div>
 
 <!-- ============ ADMIN LOGIN ============ -->
-<div id="loginView" class="wrap hidden">
-  <form id="loginForm" class="card">
-    <h1>Admin login</h1>
-    <label for="user">Username</label>
-    <input id="user" type="text" autocomplete="username" required>
-    <label for="pass">Password</label>
-    <input id="pass" type="password" autocomplete="current-password" required>
-    <button class="block" type="submit">Log in</button>
+<div id="loginView" class="center-screen hidden">
+  <form id="loginForm" class="card login">
+    <div class="hero" style="margin-bottom:22px">
+      <div class="hero-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      </div>
+      <h1 style="font-size:1.35rem">Admin login</h1>
+      <p class="muted small">Sign in to see results and manage the poll.</p>
+    </div>
+    <div class="field">
+      <label class="lbl" for="user">Username</label>
+      <input id="user" type="text" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label class="lbl" for="pass">Password</label>
+      <input id="pass" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn-lg" type="submit" style="margin-top:6px">Log in</button>
     <div id="loginMsg"></div>
   </form>
-  <footer><a class="muted small" href="#">← Back to voting</a></footer>
 </div>
 
 <!-- ============ ADMIN DASHBOARD ============ -->
 <div id="adminView" class="wrap wide hidden">
-  <div class="row spread" style="margin-bottom:12px">
-    <div>
-      <h1 id="aTitle">Admin</h1>
-      <span id="aStatus" class="badge"></span>
+  <div class="topbar">
+    <div class="brand">
+      <div class="hero-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z"/><path d="M22 19H2"/></svg>
+      </div>
+      <div style="min-width:0">
+        <h1 id="aTitle">Admin</h1>
+        <span id="aStatus" class="pill"></span>
+      </div>
     </div>
-    <div class="row">
-      <a href="#" class="small">Voter page</a>
-      <button class="secondary" id="logoutBtn">Log out</button>
+    <div class="topbar-actions">
+      <a href="/" class="small" target="_blank">Open voter page ↗</a>
+      <button class="btn-ghost" id="logoutBtn">Log out</button>
     </div>
   </div>
 
@@ -167,13 +287,13 @@
   <!-- Results -->
   <section id="tab-results">
     <div class="stats">
-      <div class="stat"><span class="muted small">Total votes</span><b id="sTotal">0</b></div>
-      <div class="stat"><span class="muted small">Leading</span><b id="sLead">—</b></div>
-      <div class="stat"><span class="muted small">Anonymous</span><b id="sAnon">0</b></div>
-      <div class="stat" id="sTurnoutBox"><span class="muted small">Turnout</span><b id="sTurnout">—</b></div>
+      <div class="stat"><span class="k">Total votes</span><b class="v" id="sTotal">0</b></div>
+      <div class="stat"><span class="k">Leading</span><b class="v" id="sLead">—</b></div>
+      <div class="stat"><span class="k">Anonymous</span><b class="v" id="sAnon">0</b></div>
+      <div class="stat" id="sTurnoutBox"><span class="k">Turnout</span><b class="v" id="sTurnout">—</b></div>
     </div>
     <div class="card">
-      <div class="row spread"><h2 style="margin:0">Vote count</h2><span class="muted small">Updates live</span></div>
+      <div class="row spread" style="margin-bottom:6px"><h2>Vote count</h2><span class="muted small">Updates live</span></div>
       <div id="bars"></div>
     </div>
   </section>
@@ -181,20 +301,23 @@
   <!-- Votes -->
   <section id="tab-votes" class="hidden">
     <div class="card">
-      <div class="row spread" style="margin-bottom:10px">
-        <h2 style="margin:0">Who voted for whom</h2>
+      <div class="row spread" style="margin-bottom:18px">
+        <h2>Who voted for whom</h2>
         <div class="row">
-          <input id="search" type="text" placeholder="Search name / ID / candidate" style="width:240px">
-          <button class="secondary" id="csvBtn">Download CSV</button>
+          <div class="search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="search" type="text" placeholder="Search name, ID, candidate">
+          </div>
+          <button class="btn-ghost" id="csvBtn">Download CSV</button>
         </div>
       </div>
-      <div class="table-wrap">
+      <div id="noVotes" class="empty">No votes yet. They'll appear here as people vote.</div>
+      <div class="table-wrap" id="voteTable">
         <table>
-          <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Voted for</th><th>Time</th><th></th></tr></thead>
+          <thead><tr><th>#</th><th id="thId">ID</th><th>Name</th><th>Voted for</th><th>Time</th><th></th></tr></thead>
           <tbody id="voteRows"></tbody>
         </table>
       </div>
-      <p id="noVotes" class="muted">No votes yet.</p>
     </div>
   </section>
 
@@ -202,82 +325,54 @@
   <section id="tab-settings" class="hidden">
     <form id="settingsForm">
       <div class="card">
-        <h2>Poll details</h2>
-        <label for="setTitle">Title</label>
-        <input id="setTitle" type="text" maxlength="100">
-        <label for="setSub">Description</label>
-        <input id="setSub" type="text" maxlength="200">
+        <div class="card-head"><h2>Poll details</h2></div>
+        <div class="field"><label class="lbl" for="setTitle">Title</label><input id="setTitle" type="text" maxlength="100"></div>
+        <div class="field"><label class="lbl" for="setSub">Description</label><input id="setSub" type="text" maxlength="200"></div>
       </div>
 
       <div class="card">
-        <h2>Who can vote</h2>
-        <div class="seg">
-          <label class="option"><input type="radio" name="voterMode" value="code">
-            <span>Voter codes (recommended)<span class="note">You hand each student a one-time code. Only real codes work and each works once.</span></span></label>
-          <label class="option"><input type="radio" name="voterMode" value="id">
-            <span>Students type their own ID<span class="note">For example, roll number. Anyone can type any ID unless you add an allowed list.</span></span></label>
-        </div>
-
-        <div id="codeBox">
-          <label for="genCount">Generate new codes</label>
-          <div class="row">
-            <input id="genCount" type="text" inputmode="numeric" value="60" style="width:90px">
-            <button type="button" id="genBtn">Generate</button>
-            <span class="muted small">Adds codes to the list below. Existing codes are kept.</span>
-          </div>
-          <label for="genNames" style="font-weight:400" class="muted small">Optional: paste student names (one per line). Each name gets its own code instead of using the number above.</label>
-          <textarea id="genNames" style="min-height:70px" placeholder="Asha&#10;Kiran&#10;Ravi"></textarea>
-
-          <div class="row spread" style="margin-top:16px">
-            <b id="codeSummary">No codes yet</b>
-            <div class="row">
-              <button type="button" class="secondary" id="printCodes">Print slips</button>
-              <button type="button" class="secondary" id="codesCsv">Download codes</button>
-            </div>
-          </div>
-          <div class="table-wrap" style="max-height:420px;overflow-y:auto;margin-top:8px">
-            <table id="codeTable">
-              <thead><tr><th>Code</th><th>Student name (optional, only you see this)</th><th>Status</th><th></th></tr></thead>
-              <tbody id="codeRows"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="idBox">
-          <label for="setIdLabel">What is the ID called?</label>
-          <input id="setIdLabel" type="text" maxlength="30" placeholder="Roll Number, Student ID, Employee ID…">
-          <label class="check"><input type="checkbox" id="setRestrict"><span>Only allow IDs from a list<br><span class="muted small">Stops people from making up IDs. Also shows turnout on the Results tab.</span></span></label>
-          <div id="allowedBox">
-            <label for="setAllowed">Allowed IDs <span class="muted small">(one per line or comma-separated; ranges like 21CS001-21CS060 work)</span></label>
-            <textarea id="setAllowed" placeholder="21CS001-21CS060&#10;21CS075"></textarea>
-            <p id="allowedCount" class="muted small" style="margin:4px 0 0"></p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Candidates / options</h2>
+        <div class="card-head" style="justify-content:space-between"><h2>Candidates</h2>
+          <button type="button" class="btn-ghost" id="addCand">+ Add candidate</button></div>
         <div id="candEdit"></div>
-        <button type="button" class="secondary" id="addCand">+ Add candidate</button>
       </div>
 
       <div class="card">
-        <h2>Voting rules</h2>
-        <label class="check"><input type="checkbox" id="setOpen"><span>Voting is open</span></label>
-        <label class="check"><input type="checkbox" id="setAnon"><span>Allow anonymous voting</span></label>
-        <label class="check"><input type="checkbox" id="setReqName"><span>Name is required (unless anonymous)</span></label>
-        <label class="check"><input type="checkbox" id="setShowRes"><span>Show live results to voters after they vote</span></label>
+        <div class="card-head"><h2>Voter identity</h2></div>
+        <div class="field">
+          <label class="lbl" for="setIdLabel">What do voters enter?</label>
+          <input id="setIdLabel" type="text" maxlength="30" placeholder="ID Card Number, Roll Number, Employee ID…">
+          <div class="hint">Each ID can vote once. Spaces and upper/lower case are ignored.</div>
+        </div>
+        <label class="toggle inline-toggle">
+          <span><span class="t-title">Only allow IDs from a list</span>
+            <span class="t-desc">Stops made-up IDs and shows turnout on the Results tab.</span></span>
+          <input type="checkbox" class="switch" id="setRestrict">
+        </label>
+        <div id="allowedBox" class="field" style="margin-top:8px">
+          <label class="lbl" for="setAllowed">Allowed IDs <span class="opt">one per line or comma-separated; ranges like 21CS001-21CS060 work</span></label>
+          <textarea id="setAllowed" placeholder="21CS001-21CS060&#10;21CS075"></textarea>
+          <div id="allowedCount" class="hint"></div>
+        </div>
       </div>
 
-      <div class="row">
-        <button type="submit">Save settings</button>
+      <div class="card">
+        <div class="card-head" style="margin-bottom:4px"><h2>Voting rules</h2></div>
+        <label class="toggle"><span><span class="t-title">Voting is open</span><span class="t-desc">Turn off to stop accepting votes.</span></span><input type="checkbox" class="switch" id="setOpen"></label>
+        <label class="toggle"><span><span class="t-title">Allow anonymous voting</span><span class="t-desc">Voters can hide their name and ID from the admin.</span></span><input type="checkbox" class="switch" id="setAnon"></label>
+        <label class="toggle"><span><span class="t-title">Require name</span><span class="t-desc">Unless the voter chooses anonymous.</span></span><input type="checkbox" class="switch" id="setReqName"></label>
+        <label class="toggle"><span><span class="t-title">Show live results to voters</span><span class="t-desc">Displayed after they submit their vote.</span></span><input type="checkbox" class="switch" id="setShowRes"></label>
+      </div>
+
+      <div class="savebar">
         <span id="saveMsg" class="small"></span>
+        <button type="submit" class="btn">Save settings</button>
       </div>
 
-      <div class="card" style="margin-top:24px">
-        <h2>Danger zone</h2>
-        <p class="muted small">Deletes every vote. Settings and candidates are kept. Download the CSV first if you need a record.</p>
-        <button type="button" class="danger" id="resetBtn">Reset all votes</button>
+      <div class="card" style="border-color:color-mix(in srgb, var(--err) 30%, var(--line))">
+        <div class="row spread">
+          <div><h2>Reset all votes</h2><p class="muted small" style="margin:4px 0 0">Deletes every vote. Settings and candidates are kept. Download the CSV first if you need a record.</p></div>
+          <button type="button" class="btn-danger" id="resetBtn">Reset votes</button>
+        </div>
       </div>
     </form>
   </section>
@@ -286,6 +381,10 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const initials = (n) => String(n || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+const hue = (n) => [...String(n)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+const avatar = (n) => `<span class="avatar" style="--h:${hue(n)}">${esc(initials(n))}</span>`;
+const TRASH = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>';
 let token = sessionStorage.getItem('pollToken') || '';
 let adminData = null, pollTimer = null, justVoted = false;
 
@@ -322,58 +421,71 @@ window.addEventListener('hashchange', route);
 // ---------------- Voter ----------------
 async function loadPoll() {
   let p;
-  try { p = await api('/api/poll'); } catch (e) { $('pTitle').textContent = 'Could not reach the poll server'; return; }
+  try { p = await api('/api/poll'); } catch (e) { $('pTitle').textContent = 'Could not reach the poll server'; $('pSub').textContent = e.message; return; }
   document.title = p.title;
   $('pTitle').textContent = p.title;
   $('pSub').textContent = p.subtitle;
-  const codeMode = p.voterMode === 'code';
+  $('pStatus').classList.remove('hidden');
+  $('pStatus').textContent = p.open ? 'Voting open' : 'Voting closed';
+  $('pStatus').classList.toggle('off', !p.open);
   $('idLabel').textContent = p.idLabel;
-  $('idHint').textContent = codeMode ? '(from the slip you were given)' : '(required, one vote per ID)';
-  $('voterId').placeholder = codeMode ? 'e.g. K7P-29Q' : 'Enter your ' + p.idLabel;
-  $('voterId').classList.toggle('code-in', codeMode);
-  $('nameHint').textContent = p.requireName ? '(required)' : '(optional)';
+  $('voterId').placeholder = 'Enter your ' + p.idLabel;
+  $('nameHint').textContent = p.requireName ? '' : '(optional)';
   $('anonBox').classList.toggle('hidden', !p.allowAnonymous);
-  $('candList').innerHTML = p.candidates.map((c) => `
-    <label class="option"><input type="radio" name="cand" value="${esc(c.id)}">
-      <span>${esc(c.name)}${c.note ? `<span class="note">${esc(c.note)}</span>` : ''}</span></label>`).join('');
-
-  const voted = justVoted;
-  $('closedCard').classList.toggle('hidden', p.open || !!voted);
-  $('voteForm').classList.toggle('hidden', !p.open || !!voted);
-  $('doneCard').classList.toggle('hidden', !voted);
-  renderPublicResults(voted ? p : null);
+  $('candList').classList.toggle('two', p.candidates.length > 3);
+  if (!$('candList').querySelector('input:checked')) {
+    $('candList').innerHTML = p.candidates.map((c) => `
+      <label class="cand"><input type="radio" name="cand" value="${esc(c.id)}">
+        ${avatar(c.name)}
+        <span class="cand-text"><span class="cand-name">${esc(c.name)}</span>${c.note ? `<span class="cand-note">${esc(c.note)}</span>` : ''}</span>
+        <span class="radio"></span></label>`).join('');
+  }
+  $('closedCard').classList.toggle('hidden', p.open || justVoted);
+  $('voteForm').classList.toggle('hidden', !p.open || justVoted);
+  $('doneCard').classList.toggle('hidden', !justVoted);
+  renderPublicResults(justVoted ? p : null);
 }
 
 function renderPublicResults(p) {
   const box = $('publicResults');
   if (!p || !p.results) { box.classList.add('hidden'); return; }
   const { counts, total } = p.results;
-  box.innerHTML = '<h2>Live results</h2>' + p.candidates.map((c) => {
-    const n = counts[c.id] || 0, pct = total ? Math.round((n / total) * 100) : 0;
-    return `<div class="bar-row"><div class="row"><span>${esc(c.name)}</span><span class="muted small">${n} (${pct}%)</span></div>
-      <div class="bar"><span style="width:${pct}%"></span></div></div>`;
-  }).join('') + `<p class="muted small">${total} total votes</p>`;
+  box.innerHTML = '<div class="row spread" style="margin-bottom:6px"><h2>Live results</h2>' +
+    `<span class="muted small">${total} vote${total === 1 ? '' : 's'}</span></div>` +
+    p.candidates.map((c) => barRow(c, counts[c.id] || 0, total, false)).join('');
   box.classList.remove('hidden');
 }
 
-$('nextVoter').addEventListener('click', () => { justVoted = false; $('voteForm').reset(); $('nameBox').classList.remove('hidden'); showMsg($('voteMsg'), ''); loadPoll(); });
+function barRow(c, n, total, lead) {
+  const pct = total ? Math.round((n / total) * 100) : 0;
+  return `<div class="bar-row ${lead ? 'lead' : ''}">${avatar(c.name)}<div class="bar-main">
+    <div class="bar-top"><span><b>${esc(c.name)}</b>${lead ? '<span class="tag">Leading</span>' : ''}</span>
+    <span class="muted small">${n} vote${n === 1 ? '' : 's'} · ${pct}%</span></div>
+    <div class="bar"><span style="width:${total ? (n / total) * 100 : 0}%"></span></div></div></div>`;
+}
+
+$('nextVoter').addEventListener('click', () => {
+  justVoted = false; $('voteForm').reset(); $('nameBox').classList.remove('hidden');
+  showMsg($('voteMsg'), ''); $('candList').innerHTML = ''; loadPoll(); scrollTo(0, 0);
+});
 $('anon').addEventListener('change', (e) => { $('nameBox').classList.toggle('hidden', e.target.checked); });
 
 $('voteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const cand = document.querySelector('input[name=cand]:checked');
+  if (!$('voterId').value.trim()) { $('voterId').focus(); return showMsg($('voteMsg'), `Please enter your ${$('idLabel').textContent}.`); }
   if (!cand) return showMsg($('voteMsg'), 'Please select a candidate.');
-  $('voteBtn').disabled = true;
+  $('voteBtn').disabled = true; $('voteBtn').textContent = 'Submitting…';
   try {
     await api('/api/vote', {
       voterId: $('voterId').value, name: $('voterName').value,
       anonymous: $('anon').checked, candidateId: cand.value,
     });
-    justVoted = true;
-    loadPoll();
+    justVoted = true; showMsg($('voteMsg'), '');
+    await loadPoll(); scrollTo(0, 0);
   } catch (err) {
     showMsg($('voteMsg'), err.message);
-  } finally { $('voteBtn').disabled = false; }
+  } finally { $('voteBtn').disabled = false; $('voteBtn').textContent = 'Submit vote'; }
 });
 
 // ---------------- Admin login ----------------
@@ -401,11 +513,11 @@ async function loadAdmin(silent) {
   const { settings: s, counts, votes } = adminData;
   $('aTitle').textContent = s.title;
   $('aStatus').textContent = s.open ? 'Voting open' : 'Voting closed';
-  $('aStatus').className = 'badge' + (s.open ? '' : ' gray');
+  $('aStatus').classList.toggle('off', !s.open);
+  $('thId').textContent = s.idLabel;
   renderResults(s, counts, votes);
   renderVotes();
   if (!silent) fillSettings(s);
-  else if (!$('codeRows').contains(document.activeElement)) renderCodes();
 }
 
 function candName(id) {
@@ -420,17 +532,13 @@ function renderResults(s, counts, votes) {
   $('sTotal').textContent = total;
   $('sLead').textContent = leaders.length === 0 ? '—' : leaders.length > 1 ? 'Tie' : leaders[0].name;
   $('sAnon').textContent = votes.filter((v) => v.anonymous).length;
-  const eligible = s.voterMode === 'code' ? s.codes.length : s.restrictIds ? s.allowedIds.length : 0;
+  const eligible = s.restrictIds ? s.allowedIds.length : 0;
   $('sTurnoutBox').classList.toggle('hidden', !eligible);
-  if (eligible) $('sTurnout').textContent = `${total}/${eligible}`;
-
+  if (eligible) $('sTurnout').textContent = `${total} / ${eligible}`;
   const sorted = [...s.candidates].sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
   $('bars').innerHTML = sorted.map((c) => {
-    const n = counts[c.id] || 0, pct = total ? Math.round((n / total) * 100) : 0;
-    const lead = n === max && max > 0;
-    return `<div class="bar-row ${lead ? 'leader' : ''}"><div class="row"><span>${esc(c.name)} ${lead && leaders.length === 1 ? '<span class="badge">Leading</span>' : ''}</span>
-      <span class="muted small">${n} vote${n === 1 ? '' : 's'} · ${pct}%</span></div>
-      <div class="bar"><span style="width:${total ? (n / total) * 100 : 0}%"></span></div></div>`;
+    const n = counts[c.id] || 0;
+    return barRow(c, n, total, n === max && max > 0 && leaders.length === 1);
   }).join('');
 }
 
@@ -441,19 +549,21 @@ function renderVotes() {
     .map((v, i) => ({ ...v, n: i + 1, cand: candName(v.candidateId) }))
     .filter((v) => !q || [v.voterId, v.name, v.cand, v.anonymous ? 'anonymous' : ''].join(' ').toLowerCase().includes(q))
     .reverse();
-  $('noVotes').classList.toggle('hidden', adminData.votes.length > 0);
+  const none = adminData.votes.length === 0;
+  $('noVotes').classList.toggle('hidden', !none);
+  $('voteTable').classList.toggle('hidden', none);
   $('voteRows').innerHTML = rows.map((v) => `<tr>
     <td class="muted">${v.n}</td>
-    <td>${v.anonymous ? '<span class="badge gray">Anonymous</span>' : esc(v.voterId)}</td>
-    <td>${v.anonymous ? '<span class="muted">—</span>' : esc(v.name) || '<span class="muted">—</span>'}</td>
-    <td><b>${esc(v.cand)}</b></td>
+    <td>${v.anonymous ? '<span class="badge">Anonymous</span>' : `<b>${esc(v.voterId)}</b>`}</td>
+    <td>${v.anonymous || !v.name ? '<span class="muted">—</span>' : esc(v.name)}</td>
+    <td>${esc(v.cand)}</td>
     <td class="muted small">${new Date(v.time).toLocaleString()}</td>
-    <td><button class="link" data-del="${esc(v.time)}">Remove</button></td></tr>`).join('');
+    <td style="text-align:right"><button class="btn-icon" title="Remove vote" data-del="${esc(v.time)}">${TRASH}</button></td></tr>`).join('');
 }
 $('search').addEventListener('input', renderVotes);
 
 $('voteRows').addEventListener('click', async (e) => {
-  const t = e.target.dataset.del;
+  const t = e.target.closest('[data-del]')?.dataset.del;
   if (!t || !confirm('Remove this vote? That person will be able to vote again.')) return;
   await api('/api/admin/delete-vote', { time: t }).catch((err) => alert(err.message));
   loadAdmin(true);
@@ -461,7 +571,7 @@ $('voteRows').addEventListener('click', async (e) => {
 
 $('csvBtn').addEventListener('click', () => {
   const cell = (s) => `"${String(s ?? '').replace(/"/g, '""')}"`;
-  const lines = [['#', 'ID', 'Name', 'Anonymous', 'Voted for', 'Time'].join(',')];
+  const lines = [['#', adminData.settings.idLabel, 'Name', 'Anonymous', 'Voted for', 'Time'].map(cell).join(',')];
   adminData.votes.forEach((v, i) => lines.push([i + 1, v.anonymous ? '' : v.voterId, v.anonymous ? '' : v.name,
     v.anonymous ? 'Yes' : 'No', candName(v.candidateId), new Date(v.time).toLocaleString()].map(cell).join(',')));
   lines.push('', cell('Totals'));
@@ -477,10 +587,15 @@ function candRow(c = {}) {
   const div = document.createElement('div');
   div.className = 'cand-edit';
   div.dataset.id = c.id || '';
-  div.innerHTML = `<input type="text" class="name-in" placeholder="Candidate name" value="${esc(c.name)}">
+  div.innerHTML = `${avatar(c.name || '+')}
+    <input type="text" class="name-in" placeholder="Candidate name" value="${esc(c.name)}">
     <input type="text" class="note-in" placeholder="Short note (optional)" value="${esc(c.note)}">
-    <button type="button" class="link" title="Remove">✕</button>`;
+    <button type="button" class="btn-icon" title="Remove candidate">${TRASH}</button>`;
   div.querySelector('button').onclick = () => div.remove();
+  div.querySelector('.name-in').oninput = (e) => {
+    const av = div.querySelector('.avatar');
+    av.textContent = initials(e.target.value || '+'); av.style.setProperty('--h', hue(e.target.value || '+'));
+  };
   return div;
 }
 $('addCand').addEventListener('click', () => $('candEdit').appendChild(candRow()).querySelector('input').focus());
@@ -502,80 +617,7 @@ function updateAllowedCount() {
 $('setAllowed').addEventListener('input', updateAllowedCount);
 $('setRestrict').addEventListener('change', (e) => $('allowedBox').classList.toggle('hidden', !e.target.checked));
 
-// ---------------- Voter codes ----------------
-let codes = []; // working copy shown in the Settings table
-
-function voterMode() { return document.querySelector('input[name=voterMode]:checked')?.value || 'code'; }
-function showModeBoxes() {
-  $('codeBox').classList.toggle('hidden', voterMode() !== 'code');
-  $('idBox').classList.toggle('hidden', voterMode() !== 'id');
-}
-document.querySelectorAll('input[name=voterMode]').forEach((r) => r.addEventListener('change', showModeBoxes));
-
-function renderCodes() {
-  const used = new Set(adminData?.usedCodes || []);
-  const nUsed = codes.filter((c) => used.has(c.code)).length;
-  $('codeSummary').textContent = codes.length ? `${codes.length} codes · ${nUsed} used · ${codes.length - nUsed} not used` : 'No codes yet';
-  $('codeRows').innerHTML = codes.map((c, i) => `<tr>
-    <td class="code">${esc(c.code)}</td>
-    <td><input type="text" data-label="${i}" value="${esc(c.label)}" placeholder="—"></td>
-    <td>${used.has(c.code) ? '<span class="badge">Voted</span>' : '<span class="badge gray">Not used</span>'}</td>
-    <td><button type="button" class="link" data-rm="${i}" title="Delete code">✕</button></td></tr>`).join('');
-}
-$('codeRows').addEventListener('input', (e) => { if (e.target.dataset.label) codes[e.target.dataset.label].label = e.target.value; });
-$('codeRows').addEventListener('click', (e) => {
-  const i = e.target.dataset.rm;
-  if (i === undefined || !confirm(`Delete code ${codes[i].code}? It will stop working (click Save settings to apply).`)) return;
-  codes.splice(i, 1); renderCodes();
-});
-
-$('genBtn').addEventListener('click', async () => {
-  const names = $('genNames').value.split('\n').map((s) => s.trim()).filter(Boolean);
-  const count = names.length || parseInt($('genCount').value, 10);
-  if (!count || count < 1) return alert('Enter how many codes to generate.');
-  $('genBtn').disabled = true;
-  try {
-    await api('/api/admin/settings', { settings: collectSettings() }); // keep unsaved edits
-    await api('/api/admin/generate-codes', { count, labels: names });
-    $('genNames').value = '';
-    await loadAdmin();
-  } catch (err) { alert(err.message); }
-  $('genBtn').disabled = false;
-});
-
-$('codesCsv').addEventListener('click', () => {
-  const used = new Set(adminData?.usedCodes || []);
-  const rows = [['Code', 'Student name', 'Status'], ...codes.map((c) => [c.code, c.label, used.has(c.code) ? 'Voted' : 'Not used'])];
-  const csv = rows.map((r) => r.map((x) => `"${String(x ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = 'voter_codes.csv'; a.click();
-});
-
-$('printCodes').addEventListener('click', () => {
-  if (!codes.length) return alert('Generate some codes first.');
-  const title = $('setTitle').value, link = location.origin;
-  const slips = codes.map((c) => `<div class="slip"><div class="t">${esc(title)}</div>
-    ${c.label ? `<div class="n">${esc(c.label)}</div>` : ''}
-    <div class="c">${esc(c.code)}</div><div class="l">Vote at: ${esc(link)}</div></div>`).join('');
-  const w = window.open('', '_blank');
-  if (!w) return alert('Please allow pop-ups to print slips.');
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Voter code slips</title><style>
-    body{font-family:system-ui,sans-serif;margin:12px;color:#000;background:#fff}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
-    .slip{border:1px dashed #888;padding:14px 10px;text-align:center;break-inside:avoid}
-    .t{font-size:12px;font-weight:600}.n{font-size:12px;color:#444;margin-top:2px}
-    .c{font:700 22px ui-monospace,Menlo,monospace;letter-spacing:.1em;margin:8px 0}
-    .l{font-size:11px;color:#444;word-break:break-all}
-    p{font-size:13px}@media print{p{display:none}}
-  </style></head><body><p>Cut along the dashed lines and give one slip to each student.</p>
-  <div class="grid">${slips}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);
-  w.document.close();
-});
-
 function fillSettings(s) {
-  document.querySelector(`input[name=voterMode][value=${s.voterMode === 'id' ? 'id' : 'code'}]`).checked = true;
-  codes = s.codes.map((c) => ({ ...c })); renderCodes(); showModeBoxes();
   $('setTitle').value = s.title; $('setSub').value = s.subtitle; $('setIdLabel').value = s.idLabel;
   $('setOpen').checked = s.open; $('setAnon').checked = s.allowAnonymous; $('setReqName').checked = s.requireName;
   $('setShowRes').checked = s.showResultsToVoters; $('setRestrict').checked = s.restrictIds;
@@ -584,25 +626,21 @@ function fillSettings(s) {
   $('candEdit').innerHTML = ''; s.candidates.forEach((c) => $('candEdit').appendChild(candRow(c)));
 }
 
-function collectSettings() {
-  return {
+$('settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const settings = {
     title: $('setTitle').value, subtitle: $('setSub').value, idLabel: $('setIdLabel').value,
-    voterMode: voterMode(), codes,
     candidates: [...document.querySelectorAll('.cand-edit')].map((d) => ({
       id: d.dataset.id || undefined, name: d.querySelector('.name-in').value, note: d.querySelector('.note-in').value })),
     open: $('setOpen').checked, allowAnonymous: $('setAnon').checked, requireName: $('setReqName').checked,
     showResultsToVoters: $('setShowRes').checked, restrictIds: $('setRestrict').checked,
     allowedIds: expandIds($('setAllowed').value),
   };
-}
-
-$('settingsForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
   try {
-    await api('/api/admin/settings', { settings: collectSettings() });
-    $('saveMsg').innerHTML = '<span style="color:var(--ok)">Saved ✓</span>';
+    await api('/api/admin/settings', { settings });
+    $('saveMsg').innerHTML = '<span style="color:var(--ok);font-weight:600">Saved ✓</span>';
     loadAdmin();
-  } catch (err) { $('saveMsg').innerHTML = `<span style="color:var(--err)">${esc(err.message)}</span>`; }
+  } catch (err) { $('saveMsg').innerHTML = `<span style="color:var(--err);font-weight:600">${esc(err.message)}</span>`; }
   setTimeout(() => ($('saveMsg').textContent = ''), 3000);
 });
 

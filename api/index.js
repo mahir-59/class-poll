@@ -13,9 +13,7 @@ const SESSION_HOURS = 12;
 const DEFAULT_SETTINGS = {
   title: 'Class Representative Election',
   subtitle: 'Choose one candidate. You can vote only once.',
-  voterMode: 'code', // 'code' = one-time codes handed out by admin, 'id' = voter types own ID
-  idLabel: 'Roll Number',
-  codes: [], // [{ code: 'K7P-29Q', label: 'optional student name' }]
+  idLabel: 'ID Card Number',
   candidates: [
     { id: 'c1', name: 'Candidate A', note: '' },
     { id: 'c2', name: 'Candidate B', note: '' },
@@ -112,13 +110,6 @@ const storageMissing = !!process.env.VERCEL && store === fileStore;
 // ---------------- Helpers ----------------
 
 const normId = (s) => String(s || '').trim().toUpperCase().replace(/\s+/g, '');
-const normCode = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I/L look-alikes
-
-function newCode() {
-  const pick = () => CODE_CHARS[crypto.randomInt(CODE_CHARS.length)];
-  return Array.from({ length: 3 }, pick).join('') + '-' + Array.from({ length: 3 }, pick).join('');
-}
 const hashId = (salt, id) => crypto.createHash('sha256').update(salt + id).digest('hex');
 
 function tally(state) {
@@ -181,8 +172,7 @@ const routes = {
     return [200, {
       title: s.title,
       subtitle: s.subtitle,
-      voterMode: s.voterMode,
-      idLabel: s.voterMode === 'code' ? 'Voter Code' : s.idLabel,
+      idLabel: s.idLabel,
       candidates: s.candidates,
       open: s.open,
       allowAnonymous: s.allowAnonymous,
@@ -196,35 +186,30 @@ const routes = {
     const s = state.settings;
     if (!s.open) return [403, { error: 'Voting is closed.' }];
 
-    const codeMode = s.voterMode === 'code';
-    const label = codeMode ? 'voter code' : s.idLabel;
-    let voterId = codeMode ? normCode(body.voterId) : normId(body.voterId);
-    let name = String(body.name || '').trim().slice(0, 60);
+    const label = s.idLabel;
+    const voterId = normId(body.voterId);
+    const name = String(body.name || '').trim().slice(0, 60);
     const anonymous = !!body.anonymous && s.allowAnonymous;
     const candidateId = String(body.candidateId || '');
 
     if (!voterId) return [400, { error: `Please enter your ${label}.` }];
-    if (codeMode) {
-      const entry = s.codes.find((c) => normCode(c.code) === voterId);
-      if (!entry) return [403, { error: 'This voter code is not valid. Check it and try again.' }];
-      voterId = entry.code;
-      if (!name) name = entry.label || '';
-    } else if (s.restrictIds && !s.allowedIds.map(normId).includes(voterId)) {
+    if (s.restrictIds && !s.allowedIds.map(normId).includes(voterId)) {
       return [403, { error: `This ${label} is not on the voter list.` }];
     }
     if (!s.candidates.some((c) => c.id === candidateId)) return [400, { error: 'Please select a candidate.' }];
     if (s.requireName && !anonymous && !name) return [400, { error: 'Please enter your name.' }];
 
-    // Anonymous votes keep only a one-way hash of the ID (to block double voting), never the ID or name.
+    // The internal voter key is a one-way hash of the ID; it alone enforces one vote per ID.
+    // Anonymous votes keep only that hash, never the ID or name.
     const added = await store.addVote({
-      voterHash: hashId(state.salt, codeMode ? normCode(voterId) : voterId),
+      voterHash: hashId(state.salt, voterId),
       voterId: anonymous ? null : voterId,
       name: anonymous ? null : name,
       anonymous,
       candidateId,
       time: new Date().toISOString(),
     });
-    if (!added) return [409, { error: `This ${label} has already been used to vote.` }];
+    if (!added) return [409, { error: `This ${label} has already voted.` }];
     return [200, { ok: true }];
   },
 
@@ -235,10 +220,8 @@ const routes = {
 
   'GET /api/admin/data': async () => {
     const state = await store.load();
-    const used = new Set(state.votes.map((v) => v.voterHash));
     return [200, {
       settings: state.settings,
-      usedCodes: state.settings.codes.filter((c) => used.has(hashId(state.salt, normCode(c.code)))).map((c) => c.code),
       counts: tally(state),
       votes: state.votes.map(({ voterHash, ...v }) => v),
     }];
@@ -259,11 +242,7 @@ const routes = {
     await store.saveSettings({
       title: String(s.title || '').trim().slice(0, 100) || 'Poll',
       subtitle: String(s.subtitle || '').trim().slice(0, 200),
-      voterMode: s.voterMode === 'id' ? 'id' : 'code',
-      idLabel: String(s.idLabel || '').trim().slice(0, 30) || 'Voter ID',
-      codes: (Array.isArray(s.codes) ? s.codes : [])
-        .map((c) => ({ code: String(c.code || '').trim().toUpperCase().slice(0, 20), label: String(c.label || '').trim().slice(0, 60) }))
-        .filter((c, i, all) => normCode(c.code) && all.findIndex((x) => normCode(x.code) === normCode(c.code)) === i),
+      idLabel: String(s.idLabel || '').trim().slice(0, 30) || 'ID Card Number',
       candidates,
       open: !!s.open,
       allowAnonymous: !!s.allowAnonymous,
@@ -272,22 +251,6 @@ const routes = {
       allowedIds: (Array.isArray(s.allowedIds) ? s.allowedIds : []).map(normId).filter(Boolean),
       showResultsToVoters: !!s.showResultsToVoters,
     });
-    return [200, { ok: true }];
-  },
-
-  'POST /api/admin/generate-codes': async (body) => {
-    const { settings } = await store.load();
-    const count = Math.min(Math.max(parseInt(body.count, 10) || 0, 1), 1000);
-    const existing = new Set(settings.codes.map((c) => normCode(c.code)));
-    const labels = Array.isArray(body.labels) ? body.labels : [];
-    const codes = [...settings.codes];
-    for (let i = 0; i < count; i++) {
-      let code;
-      do code = newCode(); while (existing.has(normCode(code)));
-      existing.add(normCode(code));
-      codes.push({ code, label: String(labels[i] || '').trim().slice(0, 60) });
-    }
-    await store.saveSettings({ ...settings, codes });
     return [200, { ok: true }];
   },
 
