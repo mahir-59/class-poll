@@ -3,3 +3,7 @@ data.json.tmp
 server.js
 README.md
 .DS_Store
+.agents/
+.claude/
+skills-lock.json
+.env*
