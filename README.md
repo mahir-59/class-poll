@@ -26,6 +26,15 @@ ADMIN_USER=teacher ADMIN_PASS=your-strong-password node server.js
 - Live results, "who voted for whom" table, CSV export.
 - Settings page: title, candidates, open/close voting, rules.
 
+## Deploy to Vercel
+
+1. Import this repo in Vercel (no build settings needed).
+2. In the project, open **Storage → Create / Connect → Upstash (Redis)** and connect it. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+3. In **Settings → Environment Variables**, set `ADMIN_USER` and `ADMIN_PASS`.
+4. Redeploy. Votes and settings are stored in Redis, so they survive across serverless instances.
+
+Locally (no Redis vars), everything is stored in `data.json`.
+
 ## Environment variables
 
 | Variable     | Default       |
@@ -34,5 +43,5 @@ ADMIN_USER=teacher ADMIN_PASS=your-strong-password node server.js
 | `ADMIN_USER` | `admin`       |
 | `ADMIN_PASS` | `admin@123`   |
 | `DATA_FILE`  | `./data.json` |
-
-Votes are stored in `DATA_FILE`, so keep it on persistent storage when hosting.
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | — (Upstash Redis; also accepts `UPSTASH_REDIS_REST_URL` / `_TOKEN`) |
+| `SESSION_SECRET` | optional extra secret for admin login tokens |

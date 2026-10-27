@@ -1,0 +1,4 @@
+{
+  "rewrites": [{ "source": "/api/:route*", "destination": "/api?route=:route*" }],
+  "headers": [{ "source": "/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }]
+}
